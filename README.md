@@ -1,0 +1,59 @@
+# A knowledge management PoC with Obsidian and Haystack/Qdrant
+
+Light local-only setup that supports vectorising and searching a
+folder of data which also happens to be an Obsidian vault.
+
+Haystack prepares the vectors and Qdrant searches the local vector database.
+
+## Caveats
+
+This is not performance tuned. It's supposed show a working setup that
+builds a vector database and is theoretically web-scale through using
+Qdrant or postgresql.
+
+This setup doesn't not use any models so be clear that it does not 
+understand synonyms or meaning like a trained semantic embedding model.
+If you want to make it smarter, use a prompt like this:
+
+```
+  Add semantic search using a sentence-transformer model so queries
+  can find relevant notes even when they use different words.
+```
+
+## Installation
+
+From the project root, create a virtual environment and install the project
+and its dependencies from `pyproject.toml`:
+
+```sh
+python3 -m venv .venv
+.venv/bin/python -m pip install --upgrade pip
+.venv/bin/python -m pip install .
+```
+
+If `.venv` already exists, skip the first command. Run the install command
+again after changing the dependencies in `pyproject.toml`.
+
+## Editing
+
+Open the obsidian-vault folder in Obsidian. Update files and stuff.
+
+## Indexing
+
+Re-run indexing after switching from sentence-transformer embeddings. The new
+vectors use a separate Qdrant collection, `haystack_word_hash_v1`, so old model
+vectors cannot be mixed with word-hashing vectors. Indexing rebuilds that collection.
+
+`.venv/bin/python ./scripts/index.py obsidian-vault`
+
+## Querying
+
+Examples with default data.
+
+`.venv/bin/python  ./scripts/query.py "hello world in obsidian vault"`
+Score: 0.577
+
+`.venv/bin/python  ./scripts/query.py "What formats are supported"`
+Score: 0.000
+
+`.venv/bin/python ./scripts/query.py "Which baked goods are welcome"`

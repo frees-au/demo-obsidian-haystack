@@ -1,0 +1,15 @@
+# Python
+*.egg-info/
+__pycache__
+
+# Obsidian configuration that differs per user.
+obsidian-vault/.obsidian/workspace.json
+obsidian-vault/.obsidian/appearance.json
+obsidian-vault/.obsidian/graph.json
+
+# Index
+.haystack
+*.sqlite
+
+# System files.
+.DS_Store

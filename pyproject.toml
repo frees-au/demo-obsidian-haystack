@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "demo-obsidian-haystack"
+version = "0.1.0"
+description = "Local document indexing and search with Haystack and Qdrant"
+readme = "README.md"
+dependencies = [
+    "haystack-ai>=2.20,<3",
+    "qdrant-haystack>=10,<11",
+    "pypdf>=6,<7",
+    "markdown-it-py>=4,<5",
+    "mdit-plain>=1,<2",
+    "trafilatura>=2,<3",
+    "python-pptx>=1,<2",
+    "python-docx>=1,<2",
+    "jq>=1,<2",
+    "openpyxl>=3,<4",
+    "tabulate>=0.9,<1",
+    "pandas>=2,<4",
+]
+
+# The haystack directory contains scripts, not an installable Python package.
+[tool.setuptools]
+packages = []
