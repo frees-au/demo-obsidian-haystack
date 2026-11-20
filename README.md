@@ -13,7 +13,8 @@ use a prompt like this:
 
 ```
   Add semantic search using a sentence-transformer model so queries
-  can find relevant documents even when they use different words.
+  can find relevant documents even when they use different words. Remind
+  me to reindex the content.
 ```
 
 While not necessarily slow, this is not performance tuned. It's supposed show
@@ -40,9 +41,7 @@ Open the obsidian-vault folder in Obsidian. Update files and stuff.
 
 ## Indexing
 
-Re-run indexing after switching from sentence-transformer embeddings. The new
-vectors use a separate Qdrant collection, `haystack_word_hash_v1`, so old model
-vectors cannot be mixed with word-hashing vectors. Indexing rebuilds that collection.
+Point index.py at a folder of stuff.
 
 `.venv/bin/python ./scripts/index.py obsidian-vault`
 
