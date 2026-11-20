@@ -7,18 +7,18 @@ Haystack prepares the vectors and Qdrant searches the local vector database.
 
 ## Caveats
 
-This is not performance tuned. It's supposed show a working setup that
-builds a vector database and is theoretically web-scale through using
-Qdrant or postgresql.
-
-This setup doesn't not use any models so be clear that it does not 
-understand synonyms or meaning like a trained semantic embedding model.
-If you want to make it smarter, use a prompt like this:
+Zero LLM in this demo. So be clear that it *does not* understand synonyms
+or meaning like a trained semantic embedding model. If you want to make it smarter,
+use a prompt like this:
 
 ```
   Add semantic search using a sentence-transformer model so queries
-  can find relevant notes even when they use different words.
+  can find relevant documents even when they use different words.
 ```
+
+While not necessarily slow, this is not performance tuned. It's supposed show
+a working setup that builds a vector database and is theoretically web-scale
+in architecture.
 
 ## Installation
 
@@ -48,12 +48,10 @@ vectors cannot be mixed with word-hashing vectors. Indexing rebuilds that collec
 
 ## Querying
 
-Examples with default data.
+This matches.
 
 `.venv/bin/python  ./scripts/query.py "hello world in obsidian vault"`
-Score: 0.577
+
+This won't work unless you add sentence-transformer (see Caveats).
 
 `.venv/bin/python  ./scripts/query.py "What formats are supported"`
-Score: 0.000
-
-`.venv/bin/python ./scripts/query.py "Which baked goods are welcome"`
