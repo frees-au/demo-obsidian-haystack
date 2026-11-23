@@ -11,5 +11,6 @@ obsidian-vault/.obsidian/graph.json
 .haystack
 *.sqlite
 
-# System files.
+# System and other.
 .DS_Store
+build/*

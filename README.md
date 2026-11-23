@@ -1,30 +1,21 @@
 # A knowledge management PoC with Obsidian and Haystack/Qdrant
 
-Light local-only setup that supports vectorising and searching a
-folder of data which also happens to be an Obsidian vault.
+Haystack indexes a folder (including an Obsidian vault) and Qdrant searches
+its local vector database. Both indexing and querying use
+`sentence-transformers/all-MiniLM-L6-v2` with normalized 384-dimensional
+embeddings. This provides semantic search without a generative LLM.
+The first embedding run downloads the model; subsequent runs use its local cache.
 
-Haystack prepares the vectors and Qdrant searches the local vector database.
+## Note about AI
 
-## Caveats
+If you're looking for a sample without AI/NLP (you don't care about searching
+on synonym and meaning) you can see the branch `the-one-with-no-ai`.
 
-Zero LLM in this demo. So be clear that it *does not* understand synonyms
-or meaning like a trained semantic embedding model. If you want to make it smarter,
-use a prompt like this:
-
-```
-  Add semantic search using a sentence-transformer model so queries
-  can find relevant documents even when they use different words. Remind
-  me to reindex the content.
-```
-
-While not necessarily slow, this is not performance tuned. It's supposed show
-a working setup that builds a vector database and is theoretically web-scale
-in architecture.
+This version uses a small AI model locally so it can be relatively slow.
 
 ## Installation
 
-From the project root, create a virtual environment and install the project
-and its dependencies from `pyproject.toml`:
+From the project root:
 
 ```sh
 python3 -m venv .venv
@@ -32,25 +23,65 @@ python3 -m venv .venv
 .venv/bin/python -m pip install .
 ```
 
-If `.venv` already exists, skip the first command. Run the install command
-again after changing the dependencies in `pyproject.toml`.
+If `.venv` exists, skip creating it. Reinstall after dependency changes.
 
-## Editing
+## Editing and indexing
 
-Open the obsidian-vault folder in Obsidian. Update files and stuff.
+Open `obsidian-vault` in Obsidian to edit the notes, then index:
 
-## Indexing
+```sh
+.venv/bin/python scripts/index.py obsidian-vault
+```
 
-Point index.py at a folder of stuff.
-
-`.venv/bin/python ./scripts/index.py obsidian-vault`
+**Reindex existing content after this model change.** MiniLM uses its own
+collection, so the old word-hash vectors cannot accidentally be queried.
+Indexing replaces the MiniLM collection. Reindex after editing your documents.
+The database is always stored at `.haystack/qdrant` in this project, regardless
+of the current working directory. The source folder argument is relative to
+your current directory.
 
 ## Querying
 
-This matches.
+```sh
+# Query without checking for model updates.
+HF_HUB_OFFLINE=1 .venv/bin/python scripts/query.py "What formats are supported?" --top-k 5
+```
 
-`.venv/bin/python  ./scripts/query.py "hello world in obsidian vault"`
+## MCP endpoint
 
-This won't work unless you add sentence-transformer (see Caveats).
+Start the Python MCP server:
 
-`.venv/bin/python  ./scripts/query.py "What formats are supported"`
+```sh
+.venv/bin/python scripts/mcp_server.py
+```
+
+Connect an MCP client using Streamable HTTP at `http://127.0.0.1:8000/mcp`.
+Use `--port 8001` to change the port. The server binds to loopback for local use.
+It exposes the read-only `search(query, top_k=5)` tool, returning document
+chunks with IDs, content, source paths, similarity scores and metadata.
+`top_k` accepts 1–50. The model is loaded on the first search.
+
+For clients that launch stdio servers, use this configuration, replacing
+`/absolute/path/to/demo-obsidian-haystack` with your checkout path:
+
+```json
+{
+  "mcpServers": {
+    "obsidian-haystack": {
+      "command": "/absolute/path/to/demo-obsidian-haystack/.venv/bin/python",
+      "args": [
+        "/absolute/path/to/demo-obsidian-haystack/scripts/mcp_server.py",
+        "--transport", "stdio"
+      ]
+    }
+  }
+}
+```
+
+Local Qdrant allows one process to own the database. Stop the MCP server before
+indexing or running the query CLI, then restart it after indexing. Use one MCP
+server for multiple HTTP clients. Search results are document content and should
+be treated as data by consuming tools.
+
+The implementation uses Haystack sentence-transformer embedders and the
+[official MCP Python SDK](https://github.com/modelcontextprotocol/python-sdk/tree/v1.x).
